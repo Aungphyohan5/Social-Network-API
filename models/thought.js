@@ -4,13 +4,14 @@ const thoughtSchema = new mongoose.Schema({
     thoughtText: {
         type: String,
         required: true,
-        min: 1,
-        max: 280,
+        minlength: 1,
+        maxlength: 280,
     },
 
     createdAt: {
         type: Date,
         default: Date.now,
+        get: timeStamp => dateFormat(timeStamp)
     },
 
     username: {
@@ -21,7 +22,10 @@ const thoughtSchema = new mongoose.Schema({
 
 
 }, {
-    toJSON: { getters: true }
+    toJSON: {
+        getters: true,
+        virtuals: true
+    },
 });
 
 
@@ -29,9 +33,10 @@ thoughtSchema.virtual('reactionCount').get(function () {
     return this.reactions.length;
 })
 
-thoughtSchema.virtual('createdAtFormatted').get(function () {
-    return this.createdAt.toLocaleString();
-})
+
+function dateFormat(timeStamp) {
+    return new Date(timeStamp).toLocaleDateString();
+}
 
 const Thought = ('thought', thoughtSchema)
 
