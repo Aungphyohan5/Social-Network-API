@@ -2,14 +2,17 @@ const { objectId } = require('mongoose').Types;
 const { User, Thought } = require('../models')
 
 module.exports = {
-    allUser(req, res) {
-        User.find()
-            .then((users) => res.json(users))
-            .catch((err) => res.status(500).json(err));
+    allUsers: async (req, res) => {
+        try {
+            const users = await User.find().populate('thoughts').populate('friends');
+            res.status(200).json(users);
+        } catch (e) {
+            res.status(500).json(e.message);
+        }
     },
 
     getSingleUser(req, res) {
-        User.findOne({ __id: req.params.userId })
+        User.findById(req.params.userId).populate('thoughts').populate('friends')
             .select('-__v')
             .then((user) =>
                 !user
@@ -23,6 +26,29 @@ module.exports = {
         User.create(req.body)
             .then((newUser) => res.json(newUser))
             .catch((e) => res.status(500).json(e));
+    },
+
+    UpdateUser(req, res) {
+        User.findByIdAndUpdate(
+            { _id: req.params.userId },
+            { $set: req.body },
+            { new: true },
+            (err, result) => {
+                if (result) {
+                    res.status(200).json(result);
+                    console.log(`Updated: ${result}`);
+                } else {
+                    console.log('Uh Oh, something went wrong');
+                    res.status(500).json({ message: 'something went wrong' });
+                }
+            }
+        )
+    },
+
+    DeleteUser(req, res) {
+        User.findByIdAndDelete(req.params.userId)
+            .then((deletedUser) => res.json(deletedUser))
+            .catch((err) => res.status(500).json(err));
     }
 
 }
