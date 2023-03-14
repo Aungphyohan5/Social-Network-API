@@ -28,7 +28,7 @@ module.exports = {
             .catch((e) => res.status(500).json(e));
     },
 
-    UpdateUser(req, res) {
+    updateUser(req, res) {
         User.findByIdAndUpdate(
             { _id: req.params.userId },
             { $set: req.body },
@@ -45,7 +45,7 @@ module.exports = {
         )
     },
 
-    DeleteUser(req, res) {
+    deleteUser(req, res) {
         User.findByIdAndDelete(req.params.userId)
             .then((deletedUser) => res.json(deletedUser))
             .catch((err) => res.status(500).json(err));
