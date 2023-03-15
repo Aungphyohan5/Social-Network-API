@@ -14,7 +14,7 @@ module.exports = {
     },
     //Get single User
     getSingleUser(req, res) {
-        User.findById(req.params.userId).populate('thoughts').populate('friends')
+        User.findOne(req.params.userId).populate('thoughts').populate('friends')
             .select('-__v')
             .then((user) =>
                 !user
@@ -32,7 +32,7 @@ module.exports = {
 
     //Update a user
     updateUser(req, res) {
-        User.findByIdAndUpdate(
+        User.findOneAndUpdate(
             { _id: req.params.userId },
             { $set: req.body },
             { new: true },
