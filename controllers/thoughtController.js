@@ -1,7 +1,7 @@
-const { objectId } = require('mongoose').Types;
 const { User, Thought } = require('../models')
 
 module.exports = {
+    //Get all thoughts
     allThoughts(req, res) {
         Thought.find({})
             .then((result) => res.json(result))
@@ -10,9 +10,9 @@ module.exports = {
                 res.status(400).json(err);
             });
     },
-
+    // Get Single thought by ID
     getThoughtById(req, res) {
-        Thought.findOne(req.params.userId)
+        Thought.findOne({ _id: req.params.thoughtId })
             .select('-__v')
             .then((thought) =>
                 !thought
@@ -21,31 +21,26 @@ module.exports = {
             )
             .catch((err) => res.status(500).json(err));
     },
-
+    // Create a thought
     createThought(req, res) {
         Thought.create(req.body)
-            .then((newThought) => {
+            .then(({ _id }) => {
                 return Thought.findOneAndUpdate(
                     { _id: req.body.userId },
-                    { $addToSet: { newThought: newThought._id } },
+                    { $push: { thoughts: _id } },
                     { new: true }
                 );
             })
-            .then((user) =>
-                !user
-                    ? res.status(404).json({
-                        message: 'Thought created, but found no user with that ID',
-                    })
-                    : res.json('Created the Thought 🎉')
+            .then((thought) =>
+                !thought
+                    ? res.status(404).json({ message: "No User find with this ID!" })
+                    : res.json(thought)
             )
-            .catch((err) => {
-                console.log(err);
-                res.status(500).json(err);
-            });
+            .catch((err) => res.status(500).json(err));
     },
-
+    // update thought
     updateThought(req, res) {
-        Thought.findByIdAndUpdate(
+        Thought.findOneAndUpdate(
             { _id: req.params.thoughtId },
             { $set: req.body },
             { new: true },
@@ -60,12 +55,12 @@ module.exports = {
             }
         )
     },
-
+    // delete thought
     deleteThought(req, res) {
-        Thought.findOneAndRemove({ _id: req.params.thoughtId })
+        Thought.findOneAndDelete({ _id: req.params.thoughtId })
             .then((thought) =>
                 !thought
-                    ? res.status(404).json({ message: 'No video with this id!' })
+                    ? res.status(404).json({ message: 'No thought with this id!' })
                     : User.findOneAndUpdate(
                         { thoughts: req.params.thoughtId },
                         { $pull: { thoughts: req.params.thoughtId } },
