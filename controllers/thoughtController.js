@@ -44,16 +44,13 @@ module.exports = {
             { _id: req.params.thoughtId },
             { $set: req.body },
             { new: true },
-            (err, result) => {
-                if (result) {
-                    res.status(200).json(result);
-                    console.log(`Updated: ${result}`);
-                } else {
-                    console.log('No thought with this id!');
-                    res.status(500).json({ message: 'No thought with this id!' });
-                }
-            }
         )
+            .then((user) =>
+                !user
+                    ? res.status(404).json({ message: "No thought find with this ID!" })
+                    : res.json(user)
+            )
+            .catch((err) => res.status(500).json(err));
     },
     // delete thought
     deleteThought(req, res) {

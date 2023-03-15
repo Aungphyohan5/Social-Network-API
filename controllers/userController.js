@@ -14,7 +14,7 @@ module.exports = {
     },
     //Get single User
     getSingleUser(req, res) {
-        User.findOne(req.params.userId).populate('thoughts').populate('friends')
+        User.findOne({ _id: req.params.userId }).populate('thoughts').populate('friends')
             .select('-__v')
             .then((user) =>
                 !user
@@ -32,20 +32,17 @@ module.exports = {
 
     //Update a user
     updateUser(req, res) {
-        User.findOneAndUpdate(
+        User.findByIdAndUpdate(
             { _id: req.params.userId },
             { $set: req.body },
             { new: true },
-            (err, result) => {
-                if (result) {
-                    res.status(200).json(result);
-                    console.log(`Updated: ${result}`);
-                } else {
-                    console.log('Uh Oh, something went wrong');
-                    res.status(500).json({ message: 'something went wrong' });
-                }
-            }
         )
+            .then((user) =>
+                !user
+                    ? res.status(404).json({ message: "No User find with this ID!" })
+                    : res.json(user)
+            )
+            .catch((err) => res.status(500).json(err));
     },
     //Delete a user
     deleteUser(req, res) {
